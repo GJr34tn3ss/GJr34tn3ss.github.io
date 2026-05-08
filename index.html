@@ -1,11 +1,363 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8"/>
-        <title>Gorden Jin</title>
-    </head>
-    <body>
-        <h1>Gorden Jin</h1>
-        <p>Hello there!</p>
-    </body>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!--
+      viewport meta: tells mobile browsers to use the device's actual width
+      instead of a virtual 980px viewport. Without this, the responsive CSS
+      breakpoints would never trigger on phones.
+    -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Gorden Jin — portfolio" />
+    <title>Gorden Jin</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+
+    <!--
+      HEADER
+      ======
+      <header> as a direct child of <body> already has an implicit "banner"
+      landmark role — no role="banner" needed.
+      The header is sticky (stays at top while scrolling) — see style.css
+      for why sticky is preferred over fixed here.
+    -->
+    <header class="site-header">
+      <!--
+        No aria-label on <nav> when there is only one nav on the page.
+        aria-label is only needed to distinguish multiple navs from each other.
+      -->
+      <nav class="nav-inner">
+
+        <!-- Site identity: clicking returns to top of page -->
+        <!--
+          No aria-label here — the visible text "Gorden Jin" is already
+          descriptive. aria-label would silently replace it in the AT.
+        -->
+        <a href="#" class="nav-brand">Gorden Jin</a>
+
+        <!--
+          Nav buttons are in a <ul> for correct list semantics.
+          Buttons (not <a> tags) are used because none of these navigate
+          to a URL — they trigger actions or are placeholders.
+        -->
+        <ul class="nav-links" role="list">
+
+          <!--
+            HOME button
+            disabled: truly non-functional — this is the correct HTML
+            attribute for "this control exists but cannot be activated".
+            aria-current="page" tells screen readers this is the current page.
+          -->
+          <li>
+            <button
+              class="nav-btn nav-btn--home"
+              aria-current="page"
+              disabled
+            >Home</button>
+          </li>
+
+          <!--
+            CONTACT button + dropdown
+            li.nav-item--contact has position:relative so the absolutely-
+            positioned dropdown anchors to this element, not the viewport.
+          -->
+          <li class="nav-item--contact">
+            <!--
+              aria-haspopup: warns AT "this opens a menu" before activation.
+              aria-expanded: live state toggled by JS so AT announces open/closed.
+              aria-controls is omitted — it's in the spec but ignored by every
+              major screen reader (NVDA, VoiceOver, JAWS), so it adds no value.
+            -->
+            <button
+              class="nav-btn nav-btn--contact"
+              id="contact-btn"
+              aria-haspopup="true"
+              aria-expanded="false"
+            >
+              Contact
+              <!-- Decorative chevron; aria-hidden removes it from AT read-out -->
+              <span class="nav-chevron" aria-hidden="true">&#9662;</span>
+            </button>
+
+            <!--
+              Dropdown menu (WAI-ARIA menu button pattern)
+              role="menu" + role="menuitem" on children signals keyboard
+              navigation semantics to assistive technologies.
+              The [hidden] attribute removes it from both layout AND
+              the accessibility tree when closed — better than display:none
+              in CSS alone because it works before JS loads.
+            -->
+            <ul
+              class="contact-dropdown"
+              id="contact-dropdown"
+              role="menu"
+              aria-labelledby="contact-btn"
+              hidden
+            >
+              <!-- First item: Email -->
+              <li role="none">
+                <a
+                  href="mailto:jxxx15jy@gmail.com"
+                  class="dropdown-item"
+                  role="menuitem"
+                >
+                  <!-- Inline SVG envelope icon (no extra HTTP request, no alt text needed) -->
+                  <svg class="dropdown-icon" aria-hidden="true" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
+                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
+                  </svg>
+                  jxxx15jy@gmail.com
+                </a>
+              </li>
+
+              <!-- Second item: GitHub -->
+              <li role="none">
+                <a
+                  href="https://github.com/GJr34tn3ss"
+                  class="dropdown-item"
+                  role="menuitem"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <!-- Inline SVG GitHub mark -->
+                  <svg class="dropdown-icon" aria-hidden="true" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 0C4.477 0 0 4.484 0 10.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0020 10.017C20 4.484 15.522 0 10 0z" clip-rule="evenodd"/>
+                  </svg>
+                  GitHub
+                </a>
+              </li>
+            </ul>
+          </li>
+
+          <!--
+            LANGUAGE TOGGLE button (中文)
+            disabled: placeholder — language switching is not yet implemented.
+            aria-label explains WHY it's unavailable so screen reader users
+            aren't confused by a silent, unresponsive button.
+          
+          <li>
+            <button
+              class="nav-btn nav-btn--lang"
+              aria-label="Switch to Chinese (not yet available)"
+              disabled
+            >中文</button>
+          </li>
+          -->
+        </ul>
+      </nav>
+    </header>
+
+
+    <!-- =====================================================================
+         MAIN CONTENT
+         id="main-content" is the skip-link target if one is added later.
+    ====================================================================== -->
+    <main id="main-content">
+
+
+      <!-- ==================================================================
+           SECTION 1: BIO / HERO
+           The hero section is the first thing a visitor sees. It contains
+           a placeholder avatar (initials), name, tagline, and bio paragraph.
+      =================================================================== -->
+      <section class="section section--hero" id="bio" aria-labelledby="hero-heading">
+        <div class="container">
+          <div class="hero-content">
+
+            <!--
+              Avatar: shows initials as a coloured circle.
+              When a real photo is available, replace this div with an <img>
+              and remove aria-hidden (the image would need meaningful alt text).
+            -->
+            <div class="hero-avatar" aria-hidden="true">GJ</div>
+
+            <div class="hero-text">
+              <h1 id="hero-heading">Hi, I'm Gorden Jin</h1>
+              <p class="hero-body">
+                I am a junior in Carnegie Mellon University, pursuing a bachelor degree in Mathematical Science and an additional major in Computer Science. I have a strong foundation in both mathematics and computer science, and I am very fascinated by how theoretical mathematics and computer science intertwine.
+              </p>
+              <p class="hero-body">Beyond academic stuff, I am a really heavy gamer. I play a lot of video games, including Teamfight Tactics, Slay the Spire 2, Civilization 5 and a lot more.</p>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ==================================================================
+           SECTION 2: SKILLS
+           Three cards in a CSS Grid. The grid collapses from 3 → 2 → 1
+           columns at the responsive breakpoints defined in style.css.
+      =================================================================== -->
+      <section class="section section--skills" id="skills" aria-labelledby="skills-heading">
+        <div class="container">
+          <h2 id="skills-heading">Skills</h2>
+
+          <div class="skills-grid">
+
+            <!-- Card 1: Programming languages -->
+            <div class="skill-card">
+              <h3 class="skill-card__title">Languages</h3>
+              <ul class="skill-list">
+                <li>Python</li>
+                <li>HTML / CSS / JavaScript</li>
+                <li>C</li>
+                <li>Java</li>
+                <li>R</li>
+                <li>LaTex</li>
+              </ul>
+            </div>
+
+            <!-- Card 2: Tools and frameworks -->
+            <div class="skill-card">
+              <h3 class="skill-card__title">Tools &amp; Frameworks</h3>
+              <ul class="skill-list">
+                <li>Git / GitHub</li>
+                <li>Vue.js</li>
+                <li>Docker</li>
+                <li>Microsoft Office</li>
+              </ul>
+            </div>
+
+            <!-- Card 3: Skills from Courses -->
+          <div class="skill-card">
+            <h3 class="skill-card__title">And many more skills from courses</h3>
+            <p>This will be in a separate page</p>
+          </div>
+
+        </div><!-- /.container -->
+      </section>
+
+
+      <!-- ==================================================================
+           SECTION 3: PROJECTS
+           CSS Grid with auto-fill + minmax so it reflows from 3 → 2 → 1
+           columns intrinsically, without needing explicit breakpoints.
+           Each card has: title, language tag, description, GitHub link.
+      =================================================================== -->
+      <section class="section section--projects" id="projects" aria-labelledby="projects-heading">
+        <div class="container">
+          <h2 id="projects-heading">Projects</h2>
+
+          <div class="projects-grid">
+
+            <!--
+              Each card is a horizontal row: left meta panel (title, tag, link)
+              and right description panel. This keeps the title visible alongside
+              long descriptions without the card growing awkwardly tall.
+            -->
+
+            <!-- Project card 1 -->
+            <article class="project-card">
+              <div class="project-card__meta">
+                <div>
+                  <h3 class="project-card__title">TFT Chess</h3>
+                  <span class="project-card__tag">Python</span>
+                </div>
+                <a href="https://github.com/Weisonorz/tft-chess-battle" class="project-card__link">GitHub &#8599;</a>
+              </div>
+              <p class="project-card__desc">
+                A project for the hackathon HACK@CMU, I led a team of 4 to build and deliver a complete, playable game from scratch within 24 hours. The game merged chess rules with mechanics from other games like Teamfight Tactics, designing a differentiated gameplay system with greater strategic depth. I designed game features such as the shop and economy system and multiple effect cards, and programmed game mechanics such as the movement and health of pieces.
+              </p>
+            </article>
+
+            <!-- Project card 2 -->
+            <article class="project-card">
+              <div class="project-card__meta">
+                <div>
+                  <h3 class="project-card__title">Machine Learning Project</h3>
+                  <span class="project-card__tag">Python</span>
+                </div>
+                <a href="assets/10_701_project.pdf" class="project-card__link">Report &#8599;</a>
+                <a href="https://github.com/l6zw32/Intro-to-ML-Project" class="project-card__link">GitHub &#8599;</a>
+              </div>
+              <p class="project-card__desc">
+                This is our project for the course 10-701 Introduction to Machine Learning. Our group did a comprehensive literature review on mitigating the cold start problem in recommendation systems, covering leading recent approaches. We reproduced 3 recommendation algorithms from the papers we reviewed, and we evaluated each approach quantitatively using 4 metrics. The report contains our findings, experimental design and results analysis.
+              </p>
+            </article>
+
+          </div>
+
+          <footer class="section-footnote">In case you didn't realise, yes, I have 2 GitHub accounts</footer>
+
+        </div>
+      </section>
+
+
+      <!-- ==================================================================
+           SECTION 4: Other EXPERIENCES
+           Same horizontal card format as Projects — reuses project-card
+           classes so no extra CSS is needed.
+      =================================================================== -->
+      <section class="section section--experiences" id="experiences" aria-labelledby="experiences-heading">
+        <div class="container">
+          <h2 id="experiences-heading">Other Experiences</h2>
+
+          <div class="projects-grid">
+
+            <!-- Experience card 1 -->
+            <article class="project-card">
+              <div class="project-card__meta">
+                <div>
+                  <h3 class="project-card__title">Open Source Contribution to TEAMMATES</h3>
+                </div>
+                <a href="https://github.com/TEAMMATES/teammates/pull/13786" class="project-card__link">Pull Request &#8599;</a>
+              </div>
+              <p class="project-card__desc">
+                As part of a project for 17-313 Foundations of Software Engineering, my team contributed to the codebase of Teammates, an online tool for managing student feedback and peer evaluations. Our team fixed a frontend bug, and in the process, optimised the codebase by refactoring some code and reorganising some files.
+              </p>
+            </article>
+
+            <!-- Experience card 2 -->
+            <article class="project-card">
+              <div class="project-card__meta">
+                <div>
+                  <h3 class="project-card__title">Summer Experiences in Mathematical Sciences (SEMS)</h3>
+                  <span class="project-card__tag">Research</span>
+                </div>
+                <a href="assets/report-slides.pdf" class="project-card__link">Report Slides &#8599;</a>
+              </div>
+              <p class="project-card__desc">
+                In summer 2025, I conducted research with a teammate on free boundary problems with Professor Giovanni Leoni. We  investigated the existence and uniqueness of solutions to obstacle problems under varying assumptions using mathematical analysis and calculus of variations, and examined concepts of viscosity solutions and explored its applicability and solution pathways for free boundary problems.
+              </p>
+            </article>
+
+            <!-- Experience card 3 -->
+            <article class="project-card">
+              <div class="project-card__meta">
+                <div>
+                  <h3 class="project-card__title">Teaching Assistant</h3>
+                </div>
+              </div>
+              <p class="project-card__desc">
+                I was the teaching assistant for 21-369 Numerical Methods in Spring 2026. I held recitations and office hours, and I graded theoretical and programming assignments.
+              </p>
+            </article>
+
+          </div>
+        </div>
+      </section>
+
+
+    </main>
+
+    
+    <footer class="site-footer">
+      <div class="container">
+        <p>Built with HTML, CSS &amp; JavaScript</p>
+        <p class="site-footer__sub">
+          Made with <a href="https://claude.ai/code" target="_blank" rel="noopener noreferrer">Claude Code</a>
+        </p>
+      </div>
+    </footer>
+  
+
+    <!--
+      Script is placed at the end of <body> so it runs after the DOM is
+      fully parsed — no need for a DOMContentLoaded wrapper in theory,
+      but main.js uses one anyway as a defensive best practice.
+    -->
+    <script src="js/main.js"></script>
+  </body>
 </html>

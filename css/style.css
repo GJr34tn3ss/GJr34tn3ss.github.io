@@ -1,0 +1,795 @@
+/* =============================================================================
+   STYLE.CSS — Portfolio for Gorden Jin
+   Order: custom properties → reset → typography → layout utilities →
+          header → nav buttons → dropdown → hero → skills → projects →
+          footer → responsive breakpoints
+   ============================================================================= */
+
+
+/* =============================================================================
+   CUSTOM PROPERTIES (design tokens)
+   Defined on :root so every element inherits them via the cascade.
+   Changing a value here updates the entire site — easy future theming.
+   ============================================================================= */
+:root {
+  /* Background colours */
+  --color-bg:              #f8f9fa; /* off-white page background — softer than pure white */
+  --color-surface:         #ffffff; /* nav, cards — pure white for layered depth */
+  --color-border:          #e0e4ea; /* subtle dividers and card outlines */
+
+  /* Text */
+  --color-text-primary:    #1a1d23; /* near-black — high contrast (~15:1 on white) */
+  --color-text-secondary:  #4a5568; /* muted body copy — ~7:1 on white, WCAG AA */
+
+  /* Accent (interactive elements, links, highlights) */
+  --color-accent:          #2563eb; /* blue — ~5.9:1 on white, passes WCAG AA */
+  --color-accent-hover:    #1d4ed8; /* darker on hover for clear feedback */
+
+  /* Elevation */
+  --shadow-nav:    0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-card:   0 1px 4px rgba(0, 0, 0, 0.06);
+  --shadow-card-hover: 0 6px 24px rgba(0, 0, 0, 0.10);
+
+  /* Spacing scale — multiples of 4px base unit */
+  --space-xs:  0.25rem;  /*  4px */
+  --space-sm:  0.5rem;   /*  8px */
+  --space-md:  1rem;     /* 16px */
+  --space-lg:  1.5rem;   /* 24px */
+  --space-xl:  2.5rem;   /* 40px */
+  --space-2xl: 5rem;     /* 80px */
+
+  /* Typography */
+  /*
+    System font stack: renders with the OS's best sans-serif — SF Pro on macOS/iOS,
+    Segoe UI on Windows, Roboto on Android. No network request, no FOUT
+    (Flash of Unstyled Text), CJK characters handled by OS fallbacks naturally.
+  */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans",
+               "Noto Sans CJK SC", "Source Han Sans CN", sans-serif;
+
+  /* Border radius */
+  --radius-sm:  6px;
+  --radius-md:  10px;
+
+  /* Transition timing */
+  --transition-fast: 0.15s ease;
+}
+
+
+/* =============================================================================
+   CSS RESET
+   Minimal normalisation. We keep browser defaults for headings and lists
+   inside content because stripping everything causes more re-work than it saves.
+   ============================================================================= */
+
+/*
+  box-sizing: border-box makes width/height include padding and border.
+  Without this, adding padding to an element expands its total size unexpectedly.
+  The * selector with inherit propagates the choice without forcing it on everything.
+*/
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/*
+  Remove default margin on common block elements that browsers add.
+  We control spacing explicitly via class-based rules.
+*/
+body, h1, h2, h3, p, ul, figure {
+  margin: 0;
+  padding: 0;
+}
+
+/* Images should never overflow their containers */
+img {
+  max-width: 100%;
+  display: block;
+}
+
+
+/* =============================================================================
+   TYPOGRAPHY BASE
+   ============================================================================= */
+body {
+  font-family: var(--font-sans);
+  font-size: 1rem;        /* 16px — browser default, best readability baseline */
+  line-height: 1.6;       /* slightly loose for body copy readability */
+  color: var(--color-text-primary);
+  background-color: var(--color-bg);
+  /*
+    -webkit-font-smoothing: antialiased improves text rendering on macOS/iOS
+    by using greyscale antialiasing rather than subpixel. This looks sharper
+    on Retina displays and is the near-universal standard for modern design.
+  */
+  -webkit-font-smoothing: antialiased;
+}
+
+h1 {
+  /*
+    clamp(min, preferred, max): fluid font size that scales with viewport width.
+    1.75rem on narrow screens, 2.75rem on wide, tracking 4vw in between.
+    This eliminates the need for a separate media query just for heading size.
+  */
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.02em; /* tighten large headings — common in modern design */
+}
+
+h2 {
+  font-size: clamp(1.35rem, 2.5vw, 1.75rem);
+  line-height: 1.25;
+  font-weight: 600;
+  margin-bottom: var(--space-xl);
+}
+
+h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+a {
+  color: var(--color-accent);
+}
+
+/*
+  :focus-visible applies the focus ring ONLY to keyboard navigation,
+  not mouse clicks. This removes the jarring outline when clicking buttons
+  while preserving it for keyboard users who need the visual indicator.
+*/
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+
+/* =============================================================================
+   LAYOUT UTILITIES
+   ============================================================================= */
+
+/*
+  .container: centres content and caps it at 1100px.
+  Horizontal padding (1.5rem each side) prevents text from touching
+  screen edges on mobile — essential for readability.
+*/
+.container {
+  max-width: 1100px;
+  margin-inline: auto;  /* shorthand for margin-left: auto; margin-right: auto */
+  padding-inline: var(--space-lg);
+}
+
+/* Consistent vertical rhythm for all top-level sections */
+.section {
+  padding-block: var(--space-2xl);  /* shorthand for padding-top + padding-bottom */
+}
+
+
+/* =============================================================================
+   HEADER & STICKY NAV
+   ============================================================================= */
+
+/*
+  position: sticky keeps the header visible as the user scrolls.
+  Unlike position: fixed, sticky does NOT remove the element from the
+  document flow — so the content below it doesn't need a manual top-offset/
+  padding-top to avoid being hidden behind the nav. The browser handles it.
+  z-index: 100 ensures the header and its dropdown render above page content.
+*/
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-nav);
+}
+
+/*
+  nav-inner: flex row, brand name on the left, nav links on the right.
+  align-items: center vertically centres both sides against each other.
+*/
+.nav-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1100px;
+  margin-inline: auto;
+  padding: var(--space-md) var(--space-lg);
+  gap: var(--space-md);
+}
+
+/* Brand / site name — acts as a home link */
+.nav-brand {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--color-text-primary);
+  text-decoration: none;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  flex-shrink: 0; /* prevent brand from being squished on small screens */
+}
+
+.nav-brand:hover {
+  color: var(--color-accent);
+}
+
+/* nav-links: horizontal list of nav items */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  list-style: none;
+}
+
+
+/* =============================================================================
+   NAV BUTTONS (shared base + per-button variants)
+   ============================================================================= */
+
+/*
+  All three nav items are <button> elements (not <a> tags) because:
+  - "Home" doesn't navigate — it's the current page indicator
+  - "Contact" opens a dropdown, not a URL
+  - "中文" is a UI control that would switch language state
+  Using <button> gives correct semantics, keyboard activation (Enter/Space),
+  and correct disabled behaviour for free.
+*/
+.nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-sm) 0.875rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.9375rem;  /* 15px — slightly smaller than body for nav context */
+  font-family: inherit;  /* buttons don't inherit font-family by default */
+  font-weight: 500;
+  color: var(--color-text-primary);
+  transition: background var(--transition-fast), color var(--transition-fast);
+  white-space: nowrap;
+}
+
+/*
+  :hover and :focus-visible on non-disabled buttons only.
+  :not(:disabled) prevents the visual feedback from appearing on buttons
+  the user can't actually activate.
+*/
+.nav-btn:hover:not(:disabled),
+.nav-btn:focus-visible:not(:disabled) {
+  background-color: var(--color-bg);
+}
+
+/*
+  disabled buttons: reduced opacity signals "not available right now"
+  without completely hiding the affordance.
+  cursor: default removes the pointer cursor that would suggest interactivity.
+*/
+.nav-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* Contact button turns accent colour on hover to hint it opens something */
+.nav-btn--contact:hover:not(:disabled) {
+  color: var(--color-accent);
+}
+
+/* Small rotating chevron arrow (▾) — purely decorative */
+.nav-chevron {
+  font-size: 0.75rem;
+  line-height: 1;
+  transition: transform var(--transition-fast);
+}
+
+/*
+  When the dropdown is open (aria-expanded="true" on the trigger button),
+  rotate the chevron 180° to point upward — communicates that clicking
+  will close the dropdown.
+*/
+.nav-btn--contact[aria-expanded="true"] .nav-chevron {
+  transform: rotate(180deg);
+}
+
+
+/* =============================================================================
+   CONTACT DROPDOWN
+   ============================================================================= */
+
+/*
+  position: relative on the list item containing the trigger button.
+  The dropdown is absolutely positioned relative to this ancestor,
+  not the viewport — so it always appears directly below the button
+  regardless of where the nav sits on screen.
+*/
+.nav-item--contact {
+  position: relative;
+}
+
+.contact-dropdown {
+  position: absolute;
+  top: calc(100% + 4px); /* 4px gap between button bottom edge and dropdown top */
+  right: 0;              /* aligns dropdown's right edge to button's right edge */
+  min-width: 200px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  padding: var(--space-xs) 0;
+  list-style: none;
+  /*
+    CSS animation for open/close.
+    The [hidden] attribute sets display:none (via the rule below) when closed.
+    JS removes [hidden] first, then adds .is-open in a requestAnimationFrame
+    so the browser can register the element before the transition starts.
+    Without rAF, the transition would never fire because the element goes
+    from display:none to opacity:1 in the same paint frame.
+  */
+  opacity: 0;
+  transform: translateY(-6px); /* starts 6px above final position */
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+  pointer-events: none; /* prevent clicks during the invisible (opacity:0) state */
+}
+
+/*
+  When .is-open is toggled by JS, the dropdown becomes fully visible
+  and slides down to its natural position.
+*/
+.contact-dropdown.is-open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/*
+  The [hidden] attribute sets display:none, overriding everything.
+  This rule makes the CSS explicitly respect [hidden] — some CSS resets
+  accidentally undo it with display:block on *. This is the defensive fix.
+*/
+.contact-dropdown[hidden] {
+  display: none;
+}
+
+/* Dropdown links */
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 0.5625rem var(--space-md); /* 9px top/bottom, 16px left/right */
+  text-decoration: none;
+  color: var(--color-text-primary);
+  font-size: 0.9rem;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus-visible {
+  background-color: var(--color-bg);
+  color: var(--color-accent);
+  outline: none; /* outline handled by :focus-visible on the element */
+}
+
+/* Inline SVG icon inside each dropdown item */
+.dropdown-icon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  color: var(--color-text-secondary);
+}
+
+.dropdown-item:hover .dropdown-icon,
+.dropdown-item:focus-visible .dropdown-icon {
+  color: var(--color-accent);
+}
+
+
+/* =============================================================================
+   HERO SECTION
+   ============================================================================= */
+.section--hero {
+  background-color: var(--color-surface);
+  /*
+    Override the default section padding for the hero:
+    more space at top (below sticky nav), slightly less at bottom.
+  */
+  padding-block: 5rem 4rem;
+}
+
+/*
+  Flexbox row: avatar on the left, text block on the right.
+  At 768px this collapses to a column (see media queries below).
+*/
+.hero-content {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xl);
+}
+
+/*
+  Avatar: a coloured circle showing initials.
+  When a real photo is available, replace this div with an <img>
+  (give it width/height/border-radius, remove the flex centering).
+*/
+.hero-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background-color: var(--color-accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  font-weight: 700;
+  flex-shrink: 0; /* prevent avatar from being squished when text is long */
+  letter-spacing: -0.02em;
+}
+
+.hero-text {
+  flex: 1;
+}
+
+.hero-text h1 {
+  margin-bottom: var(--space-sm);
+}
+
+/*
+.hero-tagline {
+  font-size: 1.125rem;
+  color: var(--color-accent);
+  font-weight: 500;
+  margin-bottom: var(--space-md);
+}
+  */
+
+.hero-body {
+  color: var(--color-text-secondary);
+  font-size: 1rem;
+  max-width: 80ch; /* characters — limits line length for readability */
+}
+
+
+/* =============================================================================
+   SKILLS SECTION
+   ============================================================================= */
+
+/*
+  Alternate background colour creates visual separation between sections
+  without needing horizontal rules or large margins.
+*/
+.section--skills {
+  background-color: var(--color-bg);
+}
+
+/*
+  CSS Grid, fixed 3-column layout on desktop.
+  At 768px we reduce to 2 columns, at 480px to 1 (see media queries).
+*/
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-lg);
+}
+
+.skill-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.skill-card__title {
+  color: var(--color-accent);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em; /* spaced uppercase for a subtle "label" look */
+  margin-bottom: var(--space-md);
+}
+
+.skill-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.skill-list li {
+  color: var(--color-text-secondary);
+  font-size: 0.9375rem;
+  padding-left: 1.1rem;
+  position: relative;
+}
+
+/*
+  Arrow prefix (→) before each skill item.
+  Using ::before pseudo-element avoids polluting the HTML with decorative content.
+*/
+.skill-list li::before {
+  content: "→";
+  position: absolute;
+  left: 0;
+  color: var(--color-accent);
+  font-size: 0.85rem;
+}
+
+
+/* Matches the font size and colour of .skill-list li items in the same section */
+.skill-card p {
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary);
+  position: relative;
+}
+
+
+/* =============================================================================
+   PROJECTS SECTION
+   ============================================================================= */
+.section--projects {
+  background-color: var(--color-surface);
+}
+
+/*
+  Alternating section backgrounds: Skills=bg, Projects=surface, Experiences=bg.
+  All card styles are shared with .project-card — no duplication needed.
+*/
+.section--experiences {
+  background-color: var(--color-bg);
+}
+
+/*
+  Single column: each card takes the full container width.
+  This is what allows the horizontal card layout below to breathe —
+  a narrow card column would be too cramped for side-by-side content.
+*/
+.projects-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
+}
+
+/*
+  Horizontal card layout: flex row with two panels.
+  Left panel (.project-card__meta) is fixed-width; the description
+  takes all remaining space. This keeps the title and link visible
+  at a glance even when descriptions are long.
+*/
+.project-card {
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: row;
+  gap: var(--space-xl);
+  align-items: flex-start;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+}
+
+.project-card:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
+}
+
+/*
+  Left meta panel: title, tag badge, and GitHub link stacked vertically.
+  justify-content: space-between pushes the link to the bottom of the
+  panel, aligning it with the foot of the description on the right.
+*/
+.project-card__meta {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 200px;
+  flex-shrink: 0; /* never compress the meta panel */
+  min-height: 72px; /* ensures gap between title area and link */
+}
+
+.project-card__title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  line-height: 1.3;
+  margin-bottom: var(--space-xs);
+}
+
+/* Small badge showing primary language or category */
+.project-card__tag {
+  display: inline-block;
+  font-size: 0.75rem;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 0.2rem 0.5rem;
+  white-space: nowrap;
+  color: var(--color-text-secondary);
+}
+
+/* Description fills the right side of the card */
+.project-card__desc {
+  flex: 1;
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.project-card__link {
+  color: var(--color-accent);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  margin-top: var(--space-md);
+}
+
+.project-card__link:hover {
+  text-decoration: underline;
+}
+
+
+/* =============================================================================
+   SECTION FOOTNOTE
+   ============================================================================= */
+.section-footnote {
+  margin-top: var(--space-lg);
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  opacity: 0.7;
+}
+
+
+/* =============================================================================
+   FOOTER
+   ============================================================================= */
+.site-footer {
+  background-color: var(--color-bg);
+  border-top: 1px solid var(--color-border);
+  padding-block: var(--space-xl);
+  text-align: center;
+}
+
+.site-footer p {
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+/* Secondary footnote line — slightly smaller and more muted than the first */
+.site-footer__sub {
+  font-size: 0.8rem;
+  margin-top: 0.35rem;
+  opacity: 0.75;
+}
+
+.site-footer__sub a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.site-footer__sub a:hover {
+  color: var(--color-accent);
+  opacity: 1;
+}
+
+
+/* =============================================================================
+   RESPONSIVE BREAKPOINTS
+   We use a desktop-first approach here: the base styles above target desktop.
+   Media queries then progressively simplify the layout for smaller viewports.
+   ============================================================================= */
+
+/* ---- TABLET (768px and narrower) ---- */
+@media (max-width: 768px) {
+
+  /* Skills: 3 columns → 2 columns */
+  .skills-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /*
+    Hero: side-by-side → stacked.
+    text-align: center works well with a centred avatar above the text.
+  */
+  .hero-content {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  /* Centre the bio paragraph inside the stacked hero */
+  .hero-body {
+    margin-inline: auto;
+  }
+
+  /* Reduce vertical breathing room — less screen real estate */
+  .section {
+    padding-block: 3.5rem;
+  }
+
+  .section--hero {
+    padding-block: 3.5rem 3rem;
+  }
+}
+
+/* ---- MOBILE (480px and narrower) ---- */
+@media (max-width: 480px) {
+
+  /* Skills: 2 columns → 1 column */
+  .skills-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /*
+    Course rows: stack name on its own line, then platform + year share the row below.
+    Without this the three columns get too cramped on narrow screens.
+  */
+  .course-item {
+    flex-wrap: wrap;
+    gap: var(--space-xs) var(--space-md);
+  }
+
+  .course-item__name {
+    flex: 0 0 100%; /* full-width first line */
+  }
+
+  .course-item__platform {
+    flex: 1; /* shares second line with year */
+  }
+
+  /*
+    Project cards: collapse from horizontal row to vertical stack.
+    The meta panel (title/tag/link) sits above the description.
+  */
+  .project-card {
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .project-card__meta {
+    width: 100%;
+    min-height: unset;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+  }
+
+  .project-card__link {
+    margin-top: 0;
+  }
+
+  /*
+    Dropdown alignment: on desktop the dropdown is right-aligned to the
+    button edge. On very narrow screens, right-aligned can cause the
+    dropdown to clip off the left edge of the viewport if the nav is
+    near the right. Left-aligning avoids this.
+  */
+  .contact-dropdown {
+    right: auto;
+    left: 0;
+  }
+
+  /* Reduce nav padding to preserve space for brand name and buttons */
+  .nav-inner {
+    padding: var(--space-sm) var(--space-md);
+  }
+
+  /* Tighten section padding further on small phones */
+  .section {
+    padding-block: 2.5rem;
+  }
+
+  .section--hero {
+    padding-block: 2.5rem 2rem;
+  }
+
+  /* Smaller avatar on mobile to reduce visual weight */
+  .hero-avatar {
+    width: 80px;
+    height: 80px;
+    font-size: 1.4rem;
+  }
+}
